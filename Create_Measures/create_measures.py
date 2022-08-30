@@ -233,9 +233,9 @@ for s in Row_list:
 
     requestBody = json.dumps(body)
 
-    print(requestBody)
+    # print(requestBody)
 
     # Do the request
-    """ measure = requests.post(myURL, data=requestBody, headers=headers)
+    measure = requests.post(myURL, data=requestBody, headers=headers)
     print("Status Code", measure.status_code)
-    print("JSON Response ", measure.json()) """
+    print("JSON Response ", measure.json())
