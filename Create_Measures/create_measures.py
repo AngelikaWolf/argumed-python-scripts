@@ -16,6 +16,16 @@ locale.setlocale(locale.LC_TIME, "de_DE")  # German
 DEV_URL = "https://weissbier.dev.dialoguecorp.com/api/v1/customers"
 PROD_URL = "https://weissbier.dialoguecorp.eu/api/v1/customers"
 
+# Headers for Request and Token
+with open("token.txt", "r") as f:
+    token = f.read()
+    token = token.strip()
+
+headers = CaseInsensitiveDict()
+headers["Accept"] = "application/json"
+headers["Authorization"] = f"Bearer {token}"
+headers["Content-Type"] = "application/json"
+
 while True:
 
     # Get the name of the file and check if it exists
@@ -80,27 +90,79 @@ while True:
 
 customerID = input("Please enter the customer ID.\n")
 
+# Check if customer is correct TODO: Handling Exceptions -> Customer does not exist
+
+while True:
+
+    if value_env == "PROD":
+        CustomerURL = "{}/{}".format(PROD_URL, customerID)
+    elif value_env == "DEV":
+        CustomerURL = "{}/{}".format(DEV_URL, customerID)
+
+    get_customer = requests.get(CustomerURL, data=customerID, headers=headers)
+    cus_response = get_customer.json()
+    print(
+        "Is this the customer you want to upload measures for:",
+        cus_response["data"]["name"],
+    )
+    check_customer_id = input(
+        "Please type in 'Yes', if the customer is correct or 'No' if this is the wrong customer.\n"
+    )
+
+    if check_customer_id == "Yes":
+        break
+    elif check_customer_id == "No":
+        customerID = input("Please enter the customer ID.\n")
+    else:
+        print("Incorrect response.")
+
 if value_env == "PROD":
     myURL = "{}/{}/{}".format(PROD_URL, customerID, "measures")
 elif value_env == "DEV":
     myURL = "{}/{}/{}".format(DEV_URL, customerID, "measures")
-else:
-    print("Invalid answer.")
-
-# Headers for Request and Token
-with open("token.txt", "r") as f:
-    token = f.read()
-    token = token.strip()
-
-headers = CaseInsensitiveDict()
-headers["Accept"] = "application/json"
-headers["Authorization"] = f"Bearer {token}"
-headers["Content-Type"] = "application/json"
 
 # Id of the division
-get_id = input("Please enter the id of the division.\n")
+division_id = input("Please enter the id of the division.\n")
+
+# Check if division is correct TODO: Handling Exceptions -> Division does not exist
+
+while True:
+
+    if value_env == "PROD":
+        DivisionURL = "{}/{}/{}/{}".format(
+            PROD_URL, customerID, "facilities", division_id
+        )
+    elif value_env == "DEV":
+        DivisionURL = "{}/{}/{}/{}".format(
+            DEV_URL, customerID, "facilities", division_id
+        )
+
+    division_payload = {
+        "facility_id": division_id,
+        "customer_id": customerID,
+    }
+
+    get_division = requests.get(DivisionURL, data=division_payload, headers=headers)
+    print("JSON Response ", get_division.json())
+    div_response = get_division.json()
+    print(
+        "Is this the division you want to upload measures for:",
+        div_response["data"]["location"],
+        div_response["data"]["operational_area"],
+    )
+    check_div_id = input(
+        "Please type in 'Yes', if the division is correct or 'No' if this is the wrong division.\n"
+    )
+
+    if check_div_id == "Yes":
+        break
+    elif check_div_id == "No":
+        division_id = input("Please enter the id of the division.\n")
+    else:
+        print("Incorrect response.")
 
 # Iterate
+# TODO: Check if status, description and name have been filled out
 for s in Row_list:
 
     """print("s0",s[0])
@@ -171,6 +233,12 @@ for s in Row_list:
     get_first_char = str(s[0])
     first_char = get_first_char[0]
 
+    if first_char == "" or first_char == "nan":
+        print("The numbering seems to be broken / missing at:", s[0])
+        first_char = input(
+            "Please enter the correct number, e.g. such as in '1.1 ungeschützte bewegte Maschinenteile'):\n"
+        )
+
     # DEV IDs
     if value_env == "DEV":
 
@@ -213,6 +281,7 @@ for s in Row_list:
 
     source = gbu_name
 
+    # TODO: Check if Date is valid / if the format is correct
     format = "%d.%m.%Y"
     date = datetime.strptime(date, format)
     date = date.date()
@@ -221,7 +290,7 @@ for s in Row_list:
     body = {
         "done": measure_status,
         "due_date": date,
-        "facility": {"id": get_id},
+        "facility": {"id": division_id},
         "hazard": hazard,
         "hazard_description": description,
         "name": name,
