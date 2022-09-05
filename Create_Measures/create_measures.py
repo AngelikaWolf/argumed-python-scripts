@@ -89,7 +89,7 @@ while True:
     except AssertionError as wrong:
         logger.error("You must either select DEV or PROD. Please try again.")
 
-# Check if customer is correct
+# Check if customer exists and if the customer is correct
 customerID = input("Please enter the customer ID.\n")
 
 while True:
@@ -101,10 +101,17 @@ while True:
 
     get_customer = requests.get(CustomerURL, data=customerID, headers=headers)
     cus_response = get_customer.json()
-    print(
-        "Is this the customer you want to upload measures for:",
-        cus_response["data"]["name"],
-    )
+
+    try:
+        print(
+            "Is this the customer you want to upload measures for:",
+            cus_response["data"]["name"],
+        )
+    except KeyError as keyerror:
+        raise Exception(
+            "The customer does not exist",
+        ) from None
+
     check_customer_id = input(
         "Please type in 'Yes', if the customer is correct or 'No' if this is the wrong customer.\n"
     )
@@ -124,7 +131,7 @@ elif value_env == "DEV":
 # Id of the division
 division_id = input("Please enter the id of the division.\n")
 
-# Check if division is correct
+# Check if division exists and if it is correct
 
 while True:
 
@@ -142,13 +149,19 @@ while True:
         "customer_id": customerID,
     }
 
-    get_division = requests.get(DivisionURL, data=division_payload, headers=headers)
-    div_response = get_division.json()
-    print(
-        "Is this the division you want to upload measures for:",
-        div_response["data"]["location"],
-        div_response["data"]["operational_area"],
-    )
+    try:
+        get_division = requests.get(DivisionURL, data=division_payload, headers=headers)
+        div_response = get_division.json()
+        print(
+            "Is this the division you want to upload measures for:",
+            div_response["data"]["location"],
+            div_response["data"]["operational_area"],
+        )
+    except requests.JSONDecodeError as json_decode_error:
+        raise Exception(
+            "The division does not exist",
+        ) from None
+
     check_div_id = input(
         "Please type in 'Yes', if the division is correct or 'No' if this is the wrong division.\n"
     )
