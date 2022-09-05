@@ -5,6 +5,7 @@ from requests.structures import CaseInsensitiveDict
 import pandas as pd
 from datetime import datetime
 import locale
+import sys
 
 locale.setlocale(locale.LC_TIME, "de_DE")  # German
 
@@ -59,7 +60,7 @@ get_gbu_name = str(get_first_row)
 gbu_name = get_gbu_name.partition("\n")[0]
 gbu_name = " ".join(gbu_name.split())  # Remove extra Spaces
 
-# Filter Rows of the Excel to extract the necessary information
+# Filter rows of the Excel sheet to extract the necessary information
 Row_list = []
 df = pd.read_excel(
     file_name, sheet_name=sheet_name, header=0, skiprows=[0, 1, 2, 3, 4, 6, 7, 8, 9]
@@ -88,9 +89,8 @@ while True:
     except AssertionError as wrong:
         logger.error("You must either select DEV or PROD. Please try again.")
 
+# Check if customer is correct
 customerID = input("Please enter the customer ID.\n")
-
-# Check if customer is correct TODO: Handling Exceptions -> Customer does not exist
 
 while True:
 
@@ -124,7 +124,7 @@ elif value_env == "DEV":
 # Id of the division
 division_id = input("Please enter the id of the division.\n")
 
-# Check if division is correct TODO: Handling Exceptions -> Division does not exist
+# Check if division is correct
 
 while True:
 
@@ -143,7 +143,6 @@ while True:
     }
 
     get_division = requests.get(DivisionURL, data=division_payload, headers=headers)
-    print("JSON Response ", get_division.json())
     div_response = get_division.json()
     print(
         "Is this the division you want to upload measures for:",
@@ -183,8 +182,6 @@ for s in Row_list:
         measure_status = True
     else:
         measure_status = False
-
-    date = s[11]
 
     # Hazard must be a string. Then we can work with it.
     get_hazard = str(s[0])
@@ -281,11 +278,24 @@ for s in Row_list:
 
     source = gbu_name
 
-    # TODO: Check if Date is valid / if the format is correct
+    date = s[11]
     format = "%d.%m.%Y"
-    date = datetime.strptime(date, format)
-    date = date.date()
-    date = date.isoformat()
+
+    # Check date format
+    try:
+        date = datetime.strptime(date, format)
+        date = date.date()
+        date = date.isoformat()
+    except ValueError as valueerror:
+        raise Exception(
+            "Incorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
+            s[0],
+        ) from None
+    except TypeError as typeerror:
+        raise Exception(
+            "Incorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
+            s[0],
+        ) from None
 
     body = {
         "done": measure_status,
@@ -302,9 +312,9 @@ for s in Row_list:
 
     requestBody = json.dumps(body)
 
-    # print(requestBody)
+    print(requestBody)
 
     # Do the request
-    measure = requests.post(myURL, data=requestBody, headers=headers)
+    """ measure = requests.post(myURL, data=requestBody, headers=headers)
     print("Status Code", measure.status_code)
-    print("JSON Response ", measure.json())
+    print("JSON Response ", measure.json()) """
