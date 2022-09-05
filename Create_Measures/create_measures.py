@@ -121,7 +121,7 @@ while True:
     elif check_customer_id == "No":
         customerID = input("Please enter the customer ID.\n")
     else:
-        print("Incorrect response.")
+        logger.error("Invalid response.")
 
 if value_env == "PROD":
     myURL = "{}/{}/{}".format(PROD_URL, customerID, "measures")
@@ -132,7 +132,6 @@ elif value_env == "DEV":
 division_id = input("Please enter the id of the division.\n")
 
 # Check if division exists and if it is correct
-
 while True:
 
     if value_env == "PROD":
@@ -171,10 +170,9 @@ while True:
     elif check_div_id == "No":
         division_id = input("Please enter the id of the division.\n")
     else:
-        print("Incorrect response.")
+        logger.error("Invalid response.")
 
 # Iterate
-# TODO: Check if status, description and name have been filled out
 for s in Row_list:
 
     """print("s0",s[0])
@@ -193,8 +191,11 @@ for s in Row_list:
 
     if s[12] == "Erledigt":
         measure_status = True
-    else:
+    elif s[12] == "Offen":
         measure_status = False
+    else:
+        print("The status of the following hazard is not valid:", s[0])
+        measure_status = input("Please type in the status ('Erledigt' or 'Offen'):\n")
 
     # Hazard must be a string. Then we can work with it.
     get_hazard = str(s[0])
@@ -204,10 +205,20 @@ for s in Row_list:
     hazard = hazard.replace(".", "")  # Remove "."
     hazard = " ".join(hazard.split())  # Remove extra Spaces
 
+    # Needed for some comparisons
+    remove_nan = "nan"
     description = s[9]
+    if str(s[9]) == remove_nan:
+        print("The description is missing for the following hazard:", s[0])
+        description = input("Please type in a description:\n")
 
     # Name must be a string. Then we can work with it.
     get_name = str([s[9]])
+
+    if get_name == remove_nan:
+        print("The name is missing for the following hazard:", s[0])
+        get_name = input("Please type in a name:\n")
+
     # Remove everything after the first sentence.
     name = get_name.partition(".")[0]
     name = name.replace("[", "")  # Remove "["
@@ -215,9 +226,6 @@ for s in Row_list:
     name = " ".join(name.split())  # Remove extra Spaces
 
     pdf_status = False
-
-    # Needed in order to assign the correct risk level
-    remove_nan = "nan"
 
     if str(s[6]) not in remove_nan:
         risk_level = 1
@@ -244,9 +252,13 @@ for s in Row_list:
     first_char = get_first_char[0]
 
     if first_char == "" or first_char == "nan":
-        print("The numbering seems to be broken / missing at:", s[0])
+        print(
+            "The numbering seems to be broken / missing at:",
+            s[0],
+            ". Without the numbering we cannot select the correct risk id.",
+        )
         first_char = input(
-            "Please enter the correct number, e.g. such as in '1.1 ungeschützte bewegte Maschinenteile'):\n"
+            "Please enter the first character, e.g. for '1.1 ungeschützte bewegte Maschinenteile' you would enter '1'.):\n"
         )
 
     # DEV IDs
@@ -283,8 +295,10 @@ for s in Row_list:
             # Psychisch
             risk_id = "a3a8725b-f1d3-4e76-ae13-da17f850dcb1"
         else:
-            # Sonstiges, also Allgemein
-            risk_id = "e8212e55-ebad-4a6c-87d3-445696104e48"
+            # Nicht valide
+            print("Invalid risk id.")
+            raise
+
     else:
         risk_id = "fb058675-aec9-4a09-bcd7-d0adb256314e"  # Allgemein
         # TODO: PROD IDs und korrekte DEV IDs
@@ -325,9 +339,16 @@ for s in Row_list:
 
     requestBody = json.dumps(body)
 
-    print(requestBody)
+    # print(requestBody)
 
     # Do the request
-    """ measure = requests.post(myURL, data=requestBody, headers=headers)
-    print("Status Code", measure.status_code)
+    measure = requests.post(myURL, data=requestBody, headers=headers)
+    if str(measure.status_code) == "201":
+        print("The following measure has been created:", name)
+    else:
+        print("The following measure could not be created:", name)
+        print("Status Code", measure.status_code)
+        print("JSON Response ", measure.json())
+
+""" print("Status Code", measure.status_code)
     print("JSON Response ", measure.json()) """
