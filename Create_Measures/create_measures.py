@@ -280,28 +280,67 @@ for s in Row_list:
             # Brandschutz
             risk_id = "e2def59b-0c0b-4dc4-8fb9-a2a122dbcf7c"
         elif first_char == "6":
-            # Thermisch gibt es nicht, also Gefahrstoffe
-            risk_id = "2d4c9161-2d44-4aea-88e3-45249979ccbe"
+            # Thermische G.
+            risk_id = "4fbbb167-95a2-4b81-92ca-4530c29bc957"
         elif first_char == "7":
-            # Physikalisch gibt es nicht, also Allgemein
-            risk_id = "e8212e55-ebad-4a6c-87d3-445696104e48"
+            # Physikalische Einwirkungen
+            risk_id = "c9da8c0e-a37c-46c4-be27-188dea32d25a"
         elif first_char == "8":
-            # Arbeitsumgebung
-            risk_id = "87760a21-4f0a-4da9-bf95-c176c75aff09"
+            # Arbeitsumgebungsbedingungen
+            risk_id = "c3feb662-75e2-4548-b0eb-f1d697416767"
         elif first_char == "9":
-            # Physische Belastung gibt es nicht, also Arbeitsumgebung
-            risk_id = "87760a21-4f0a-4da9-bf95-c176c75aff09"
+            # Physische Belastung
+            risk_id = "e7d2edf7-7591-4fb3-b60f-7c1f7994a958"
         elif first_char == "10":
-            # Psychisch
+            # Psychische Faktoren
             risk_id = "a3a8725b-f1d3-4e76-ae13-da17f850dcb1"
+        elif first_char == "11":
+            # Sonstige Gefährdungen
+            risk_id = "a506f7b8-336d-40b4-aa0a-e0c4c6ba8de6"
         else:
             # Nicht valide
             print("Invalid risk id.")
             raise
 
-    else:
-        risk_id = "fb058675-aec9-4a09-bcd7-d0adb256314e"  # Allgemein
-        # TODO: PROD IDs und korrekte DEV IDs
+    elif value_env == "PROD":
+
+        if first_char == "1":
+            # Mechanische G.
+            risk_id = "3a6d0f2c-00aa-47a8-85a0-6c73a28181b9"
+        elif first_char == "2":
+            # Elektrische G.
+            risk_id = "951ef441-fd9d-45dc-bf8b-343e5019e2db"
+        elif first_char == "3":
+            # Gefahrstoffe
+            risk_id = "2421bcdb-322b-4b2b-b868-32fc05c07ce7"
+        elif first_char == "4":
+            # Gefahr und Biostoffe
+            risk_id = "b8a2f7a5-325f-4c6b-8727-48dcc3406f9c"
+        elif first_char == "5":
+            # Brandschutz
+            risk_id = "881ef746-efc0-40d6-b67f-04846d89a35c"
+        elif first_char == "6":
+            # Thermische G.
+            risk_id = "269cd96b-3d0c-4337-80d6-c97898e80890"
+        elif first_char == "7":
+            # Physikalische Einwirkungen
+            risk_id = "53d0a16f-45d3-4073-896c-0263d8c552b1"
+        elif first_char == "8":
+            # Arbeitsumgebungsbedingungen
+            risk_id = "52a1f928-0eb0-4fbf-a63f-2b975158bf0b"
+        elif first_char == "9":
+            # Physische Belastung
+            risk_id = "f7167ec6-7cbe-4771-bc91-b7517ad19f55"
+        elif first_char == "10":
+            # Psychische Faktoren
+            risk_id = "832b98b5-7a2e-4eb7-9fbd-881643157e16"
+        elif first_char == "11":
+            # Sonstige Gefährdungen
+            risk_id = "09259b68-df01-4820-b6be-7441c7435c67"
+        else:
+            # Nicht valide
+            print("Invalid risk id.")
+            raise
 
     source = gbu_name
 
