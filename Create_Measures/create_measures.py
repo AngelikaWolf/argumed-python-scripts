@@ -5,7 +5,7 @@ from requests.structures import CaseInsensitiveDict
 import pandas as pd
 from datetime import datetime
 import locale
-import sys
+import openpyxl #import needed for windows exe - otherwise the converter will miss it even though it should work via pandas
 
 locale.setlocale(locale.LC_TIME, "de_DE")  # German
 
