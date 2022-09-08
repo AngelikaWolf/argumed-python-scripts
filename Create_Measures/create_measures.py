@@ -391,3 +391,5 @@ for s in Row_list:
 
 """ print("Status Code", measure.status_code)
     print("JSON Response ", measure.json()) """
+
+input("Press any key to exit the script...")
