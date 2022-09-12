@@ -33,7 +33,9 @@ headers["Content-Type"] = "application/json"
 while True:
 
     # Get the name of the file and check if it exists
-    file_name = input("\nPlease enter the name of the Excel file.\n")
+    file_name = input(
+        "\nPlease enter the name of the Excel file. Don't forget the filename extension.\n"
+    )
     try:
         open(file_name, "r")
         break
@@ -218,8 +220,16 @@ for s in Row_list:
     elif s[12] == "Offen" or s[12] == "offen":
         measure_status = False
     else:
-        print("\nThe status of the following hazard is not valid:", s[0])
-        measure_status = input("\nPlease type in the status ('Erledigt' or 'Offen'):\n")
+        print(
+            "\nThe status of the following hazard is either missing or not valid:", s[0]
+        )
+        missing_measure_status = input(
+            "\nPlease type in the status ('Erledigt' or 'Offen'):\n"
+        )
+        if missing_measure_status == "Erledigt" or missing_measure_status == "erledigt":
+            measure_status = True
+        elif missing_measure_status == "Offen" or missing_measure_status == "offen":
+            measure_status = False
 
     # Hazard must be a string. Then we can work with it.
     get_hazard = str(s[0])
@@ -246,6 +256,7 @@ for s in Row_list:
     # Remove everything after the first sentence.
     name = get_name.partition(".")[0]
     name = name.replace("[", "")  # Remove "["
+    name = name.replace("]", "")  # Remove "["
     name = name.replace("'", "")  # Remove "'"
     name = " ".join(name.split())  # Remove extra Spaces
 
@@ -391,34 +402,50 @@ for s in Row_list:
     date = s[11]
     format = "%d.%m.%Y"
 
-    # Check date format
-    try:
-        date = datetime.strptime(date, format)
-        date = date.date()
-        date = date.isoformat()
-    except ValueError as valueerror:
-        raise Exception(
-            "\nIncorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
-            s[0],
-        ) from None
-    except TypeError as typeerror:
-        raise Exception(
-            "\nIncorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
-            s[0],
-        ) from None
+    if str(date) != remove_nan:
 
-    body = {
-        "done": measure_status,
-        "due_date": date,
-        "facility": {"id": division_id},
-        "hazard": hazard,
-        "hazard_description": description,
-        "name": name,
-        "pdf_sent": pdf_status,
-        "risk_group": {"id": risk_id},
-        "risk_level": risk_level,
-        "source": source,
-    }
+        # Check for correct date format
+        try:
+            date = datetime.strptime(date, format)
+            date = date.date()
+            date = date.isoformat()
+        except ValueError as valueerror:
+            raise Exception(
+                "\nIncorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
+                s[0],
+            ) from None
+        except TypeError as typeerror:
+            raise Exception(
+                "\nIncorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
+                s[0],
+            ) from None
+
+    if str(date) == remove_nan:
+        body = {
+            "done": measure_status,
+            "facility": {"id": division_id},
+            "hazard": hazard,
+            "hazard_description": description,
+            "name": name,
+            "pdf_sent": pdf_status,
+            "risk_group": {"id": risk_id},
+            "risk_level": risk_level,
+            "source": source,
+        }
+
+    else:
+        body = {
+            "done": measure_status,
+            "due_date": date,
+            "facility": {"id": division_id},
+            "hazard": hazard,
+            "hazard_description": description,
+            "name": name,
+            "pdf_sent": pdf_status,
+            "risk_group": {"id": risk_id},
+            "risk_level": risk_level,
+            "source": source,
+        }
 
     requestBody = json.dumps(body)
 
