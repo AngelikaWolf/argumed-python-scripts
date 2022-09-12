@@ -7,6 +7,8 @@ from datetime import datetime
 import locale
 import openpyxl #import needed for windows exe - otherwise the converter will miss it even though it should work via pandas
 
+# TODO: Zeilenumbrueche und Abgleich mit bereits existierenden Massnahmen (wenn es geht)
+
 locale.setlocale(locale.LC_TIME, "de_DE")  # German
 
 # How to use:
@@ -30,19 +32,19 @@ headers["Content-Type"] = "application/json"
 while True:
 
     # Get the name of the file and check if it exists
-    file_name = input("Please enter the name of the Excel file.\n")
+    file_name = input("\nPlease enter the name of the Excel file.\n")
     try:
         open(file_name, "r")
         break
     except FileNotFoundError as e:
-        logger.error("The file does not exist. Please try again.")
+        logger.error("\nThe file does not exist. Please try again.")
 
 
 while True:
 
     # Get the name of the sheet and check if it exists
     sheet_name = input(
-        "Please enter the name of the sheet (tab) that contains the risk assessment.\n"
+        "\nPlease enter the name of the sheet (tab) that contains the risk assessment.\n"
     )
     try:
         get_first_row = pd.read_excel(
@@ -50,7 +52,7 @@ while True:
         )
         break
     except ValueError as error:
-        logger.error("The sheet does not exist. Please try again.")
+        logger.error("\nThe sheet does not exist. Please try again.")
 
 # Open the file and then get the first row (this is needed for the source field)
 get_first_row = pd.read_excel(file_name, sheet_name=sheet_name, nrows=1, usecols="A")
@@ -81,16 +83,16 @@ while True:
     try:
         # Choose DEV or PROD
         value_env = input(
-            "Please enter 'DEV' if you want to create measures on DEV or 'PROD' if you want to create measures on PROD.\n"
+            "\nPlease enter 'DEV' if you want to create measures on DEV or 'PROD' if you want to create measures on PROD.\n"
         )
         # Check that DEV or PROD has been chosen
         assert (value_env == "DEV") or (value_env == "PROD")
         break
     except AssertionError as wrong:
-        logger.error("You must either select DEV or PROD. Please try again.")
+        logger.error("\nYou must either select DEV or PROD. Please try again.")
 
 # Check if customer exists and if the customer is correct
-customerID = input("Please enter the customer ID.\n")
+customerID = input("\nPlease enter the customer ID.\n")
 
 while True:
 
@@ -104,24 +106,24 @@ while True:
 
     try:
         print(
-            "Is this the customer you want to upload measures for:",
+            "\nIs this the customer you want to upload measures for:",
             cus_response["data"]["name"],
         )
     except KeyError as keyerror:
         raise Exception(
-            "The customer does not exist",
+            "\nThe customer does not exist",
         ) from None
 
     check_customer_id = input(
-        "Please type in 'Yes', if the customer is correct or 'No' if this is the wrong customer.\n"
+        "\nPlease type in 'Yes', if the customer is correct or 'No' if this is the wrong customer.\n"
     )
 
     if check_customer_id == "Yes":
         break
     elif check_customer_id == "No":
-        customerID = input("Please enter the customer ID.\n")
+        customerID = input("\nPlease enter the customer ID.\n")
     else:
-        logger.error("Invalid response.")
+        logger.error("\nInvalid response.")
 
 if value_env == "PROD":
     myURL = "{}/{}/{}".format(PROD_URL, customerID, "measures")
@@ -129,7 +131,7 @@ elif value_env == "DEV":
     myURL = "{}/{}/{}".format(DEV_URL, customerID, "measures")
 
 # Id of the division
-division_id = input("Please enter the id of the division.\n")
+division_id = input("\nPlease enter the id of the division.\n")
 
 # Check if division exists and if it is correct
 while True:
@@ -152,25 +154,25 @@ while True:
         get_division = requests.get(DivisionURL, data=division_payload, headers=headers)
         div_response = get_division.json()
         print(
-            "Is this the division you want to upload measures for:",
+            "\nIs this the division you want to upload measures for:",
             div_response["data"]["location"],
             div_response["data"]["operational_area"],
         )
     except requests.JSONDecodeError as json_decode_error:
         raise Exception(
-            "The division does not exist",
+            "\nThe division does not exist",
         ) from None
 
     check_div_id = input(
-        "Please type in 'Yes', if the division is correct or 'No' if this is the wrong division.\n"
+        "\nPlease type in 'Yes', if the division is correct or 'No' if this is the wrong division.\n"
     )
 
     if check_div_id == "Yes":
         break
     elif check_div_id == "No":
-        division_id = input("Please enter the id of the division.\n")
+        division_id = input("\nPlease enter the id of the division.\n")
     else:
-        logger.error("Invalid response.")
+        logger.error("\nInvalid response.")
 
 # Iterate
 for s in Row_list:
@@ -194,8 +196,8 @@ for s in Row_list:
     elif s[12] == "Offen":
         measure_status = False
     else:
-        print("The status of the following hazard is not valid:", s[0])
-        measure_status = input("Please type in the status ('Erledigt' or 'Offen'):\n")
+        print("\nThe status of the following hazard is not valid:", s[0])
+        measure_status = input("\nPlease type in the status ('Erledigt' or 'Offen'):\n")
 
     # Hazard must be a string. Then we can work with it.
     get_hazard = str(s[0])
@@ -209,14 +211,14 @@ for s in Row_list:
     remove_nan = "nan"
     description = s[9]
     if str(s[9]) == remove_nan:
-        print("The description is missing for the following hazard:", s[0])
-        description = input("Please type in a description:\n")
+        print("\nThe description is missing for the following hazard:", s[0])
+        description = input("\nPlease type in a description:\n")
 
     # Name must be a string. Then we can work with it.
     get_name = str([s[9]])
 
     if get_name == remove_nan:
-        print("The name is missing for the following hazard:", s[0])
+        print("\nThe name is missing for the following hazard:", s[0])
         get_name = input("Please type in a name:\n")
 
     # Remove everything after the first sentence.
@@ -236,7 +238,7 @@ for s in Row_list:
 
     # Check that at least one risk level has been selected:
     if str(s[6]) == remove_nan and str(s[7]) == remove_nan and str(s[8]) == remove_nan:
-        print("The risk level is missing for the following hazard:", s[0])
+        print("\nThe risk level is missing for the following hazard:", s[0])
         risk_level = input("Please enter a risk level (1, 2 or 3)\n")
     # Check that only one risk level has been selected:
     if (
@@ -244,7 +246,7 @@ for s in Row_list:
         or (str(s[7]) != remove_nan and str(s[8]) != remove_nan)
         or (str(s[6]) != remove_nan and str(s[8]) != remove_nan)
     ):
-        print("You have selected multiple risk levels for the following hazard:", s[0])
+        print("\nYou have selected multiple risk levels for the following hazard:", s[0])
         risk_level = input("Please only choose one risk level(1, 2 or 3):\n")
 
     # Get the risk id
@@ -253,12 +255,12 @@ for s in Row_list:
 
     if first_char == "" or first_char == "nan":
         print(
-            "The numbering seems to be broken / missing at:",
+            "\nThe numbering seems to be broken / missing at:",
             s[0],
             ". Without the numbering we cannot select the correct risk id.",
         )
         first_char = input(
-            "Please enter the first character, e.g. for '1.1 ungeschützte bewegte Maschinenteile' you would enter '1'.):\n"
+            "\nPlease enter the first character, e.g. for '1.1 ungeschützte bewegte Maschinenteile' you would enter '1'.):\n"
         )
 
     # DEV IDs
@@ -354,12 +356,12 @@ for s in Row_list:
         date = date.isoformat()
     except ValueError as valueerror:
         raise Exception(
-            "Incorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
+            "\nIncorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
             s[0],
         ) from None
     except TypeError as typeerror:
         raise Exception(
-            "Incorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
+            "\nIncorrect data format. The date format should be 'DD.MM.YYYY' for the following hazard:",
             s[0],
         ) from None
 
@@ -378,18 +380,18 @@ for s in Row_list:
 
     requestBody = json.dumps(body)
 
-    # print(requestBody)
+    print(requestBody)
 
-    # Do the request
+"""     # Do the request
     measure = requests.post(myURL, data=requestBody, headers=headers)
     if str(measure.status_code) == "201":
-        print("The following measure has been created:", name)
+        print("\nThe following measure has been created:", name)
     else:
-        print("The following measure could not be created:", name)
+        print("\nThe following measure could not be created:", name)
         print("Status Code", measure.status_code)
-        print("JSON Response ", measure.json())
+        print("JSON Response ", measure.json()) """
 
 """ print("Status Code", measure.status_code)
     print("JSON Response ", measure.json()) """
 
-input("Press any key to exit the script...")
+input("\nPress any key to exit the script...")
