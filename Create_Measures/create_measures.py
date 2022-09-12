@@ -1,11 +1,12 @@
 from asyncio.log import logger
+from tkinter import Entry
 import requests
 import json
 from requests.structures import CaseInsensitiveDict
 import pandas as pd
 from datetime import datetime
 import locale
-import openpyxl #import needed for windows exe - otherwise the converter will miss it even though it should work via pandas
+import openpyxl  # import needed for windows exe - otherwise the converter will miss it even though it should work via pandas
 
 # TODO: Zeilenumbrueche und Abgleich mit bereits existierenden Massnahmen (wenn es geht)
 
@@ -86,7 +87,7 @@ while True:
             "\nPlease enter 'DEV' if you want to create measures on DEV or 'PROD' if you want to create measures on PROD.\n"
         )
         # Check that DEV or PROD has been chosen
-        assert (value_env == "DEV") or (value_env == "PROD")
+        assert (value_env.upper() == "DEV") or (value_env.upper() == "PROD")
         break
     except AssertionError as wrong:
         logger.error("\nYou must either select DEV or PROD. Please try again.")
@@ -96,9 +97,9 @@ customerID = input("\nPlease enter the customer ID.\n")
 
 while True:
 
-    if value_env == "PROD":
+    if value_env.upper() == "PROD":
         CustomerURL = "{}/{}".format(PROD_URL, customerID)
-    elif value_env == "DEV":
+    elif value_env.upper() == "DEV":
         CustomerURL = "{}/{}".format(DEV_URL, customerID)
 
     get_customer = requests.get(CustomerURL, data=customerID, headers=headers)
@@ -118,16 +119,16 @@ while True:
         "\nPlease type in 'Yes', if the customer is correct or 'No' if this is the wrong customer.\n"
     )
 
-    if check_customer_id == "Yes":
+    if check_customer_id.lower() == "yes":
         break
-    elif check_customer_id == "No":
+    elif check_customer_id.lower() == "no":
         customerID = input("\nPlease enter the customer ID.\n")
     else:
         logger.error("\nInvalid response.")
 
-if value_env == "PROD":
+if value_env.upper() == "PROD":
     myURL = "{}/{}/{}".format(PROD_URL, customerID, "measures")
-elif value_env == "DEV":
+elif value_env.upper() == "DEV":
     myURL = "{}/{}/{}".format(DEV_URL, customerID, "measures")
 
 # Id of the division
@@ -136,11 +137,11 @@ division_id = input("\nPlease enter the id of the division.\n")
 # Check if division exists and if it is correct
 while True:
 
-    if value_env == "PROD":
+    if value_env.upper() == "PROD":
         DivisionURL = "{}/{}/{}/{}".format(
             PROD_URL, customerID, "facilities", division_id
         )
-    elif value_env == "DEV":
+    elif value_env.upper() == "DEV":
         DivisionURL = "{}/{}/{}/{}".format(
             DEV_URL, customerID, "facilities", division_id
         )
@@ -167,12 +168,33 @@ while True:
         "\nPlease type in 'Yes', if the division is correct or 'No' if this is the wrong division.\n"
     )
 
-    if check_div_id == "Yes":
+    if check_div_id.lower() == "yes":
         break
-    elif check_div_id == "No":
+    elif check_div_id.lower() == "no":
         division_id = input("\nPlease enter the id of the division.\n")
     else:
         logger.error("\nInvalid response.")
+
+# Get all existing measures for the customer and the division
+
+if value_env.upper() == "PROD":
+    MeasuresURL = "{}/{}/{}".format(PROD_URL, customerID, "measures?")
+elif value_env.upper() == "DEV":
+    MeasuresURL = "{}/{}/{}".format(DEV_URL, customerID, "measures?")
+
+measure_payload = {
+    "locations": div_response["data"]["location"],
+    "operational_areas": div_response["data"]["operational_area"],
+}
+
+get_all_measures = requests.get(MeasuresURL, measure_payload, headers=headers)
+all_measures = get_all_measures.json()
+
+measure_list = []
+
+for entry in all_measures["data"]:
+    measure_output = entry["name"]
+    measure_list.append(measure_output)
 
 # Iterate
 for s in Row_list:
@@ -191,9 +213,9 @@ for s in Row_list:
     print("s11",s[11])
     print("s12",s[12])"""
 
-    if s[12] == "Erledigt":
+    if s[12] == "Erledigt" or s[12] == "erledigt":
         measure_status = True
-    elif s[12] == "Offen":
+    elif s[12] == "Offen" or s[12] == "offen":
         measure_status = False
     else:
         print("\nThe status of the following hazard is not valid:", s[0])
@@ -227,6 +249,24 @@ for s in Row_list:
     name = name.replace("'", "")  # Remove "'"
     name = " ".join(name.split())  # Remove extra Spaces
 
+    # Aks to skip hazard if it already exists
+    if name in measure_list:
+        print(
+            "\nA measure with the following name: ",
+            "'",
+            name,
+            "'",
+            " is already in the portal for this location and operational area.",
+        )
+        create_or_not = input(
+            "\nDo you still want to create the measure? Please type in 'Yes' or 'No'.\n"
+        )
+
+        if create_or_not.lower() == "no":
+            continue
+        elif (create_or_not.lower() != "no") and (create_or_not.lower() != "yes"):
+            logger.error("\nInvalid response.")
+
     pdf_status = False
 
     if str(s[6]) not in remove_nan:
@@ -246,7 +286,9 @@ for s in Row_list:
         or (str(s[7]) != remove_nan and str(s[8]) != remove_nan)
         or (str(s[6]) != remove_nan and str(s[8]) != remove_nan)
     ):
-        print("\nYou have selected multiple risk levels for the following hazard:", s[0])
+        print(
+            "\nYou have selected multiple risk levels for the following hazard:", s[0]
+        )
         risk_level = input("Please only choose one risk level(1, 2 or 3):\n")
 
     # Get the risk id
@@ -264,7 +306,7 @@ for s in Row_list:
         )
 
     # DEV IDs
-    if value_env == "DEV":
+    if value_env.upper() == "DEV":
 
         if first_char == "1":
             # Mechanische G.
@@ -304,7 +346,7 @@ for s in Row_list:
             print("Invalid risk id.")
             raise
 
-    elif value_env == "PROD":
+    elif value_env.upper() == "PROD":
 
         if first_char == "1":
             # Mechanische G.
@@ -380,16 +422,16 @@ for s in Row_list:
 
     requestBody = json.dumps(body)
 
-    print(requestBody)
+    # print(requestBody)
 
-"""     # Do the request
+    # Do the request
     measure = requests.post(myURL, data=requestBody, headers=headers)
     if str(measure.status_code) == "201":
         print("\nThe following measure has been created:", name)
     else:
         print("\nThe following measure could not be created:", name)
         print("Status Code", measure.status_code)
-        print("JSON Response ", measure.json()) """
+        print("JSON Response ", measure.json())
 
 """ print("Status Code", measure.status_code)
     print("JSON Response ", measure.json()) """
