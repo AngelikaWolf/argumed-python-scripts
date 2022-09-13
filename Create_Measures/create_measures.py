@@ -215,21 +215,24 @@ for s in Row_list:
     print("s11",s[11])
     print("s12",s[12])"""
 
-    if s[12] == "Erledigt" or s[12] == "erledigt":
-        measure_status = True
-    elif s[12] == "Offen" or s[12] == "offen":
-        measure_status = False
-    else:
-        print(
-            "\nThe status of the following hazard is either missing or not valid:", s[0]
-        )
-        missing_measure_status = input(
-            "\nPlease type in the status ('Erledigt' or 'Offen'):\n"
-        )
-        if missing_measure_status == "Erledigt" or missing_measure_status == "erledigt":
+    measure_status = s[12]
+
+    while True:
+
+        if str(measure_status) == "Erledigt" or str(measure_status) == "erledigt":
             measure_status = True
-        elif missing_measure_status == "Offen" or missing_measure_status == "offen":
+            break
+        elif str(measure_status) == "Offen" or str(measure_status) == "offen":
             measure_status = False
+            break
+        else:
+            print(
+                "\nThe status of the following hazard is either missing or not valid:",
+                s[0],
+            )
+            measure_status = input(
+                "\nPlease type in the status ('Erledigt' or 'Offen'):\n"
+            )
 
     # Hazard must be a string. Then we can work with it.
     get_hazard = str(s[0])
@@ -240,27 +243,53 @@ for s in Row_list:
     hazard = " ".join(hazard.split())  # Remove extra Spaces
 
     # Needed for some comparisons
-    remove_nan = "nan"
-    description = s[9]
-    if str(s[9]) == remove_nan:
+    empty_nan = "nan"
+    description = str(s[9])
+
+    if description == empty_nan:
+
         print("\nThe description is missing for the following hazard:", s[0])
-        description = input("\nPlease type in a description:\n")
+
+        while True:
+            description = input("\nPlease type in a description:\n")
+            print("\nIs the description correct?\n", description)
+            check_des = input(
+                "\nPlease type in 'Yes', if the description is correct or 'No' if you want to change it.\n"
+            )
+            if check_des.lower() == "yes":
+                if description == empty_nan:
+                    print("\nThe description is still missing.\n")
+                else:
+                    break
 
     # Name must be a string. Then we can work with it.
-    get_name = str([s[9]])
+    get_name = description
 
-    if get_name == remove_nan:
+    if get_name == empty_nan:
+
         print("\nThe name is missing for the following hazard:", s[0])
-        get_name = input("Please type in a name:\n")
+
+        while True:
+            get_name = input("Please type in a name:\n")
+            print("\nIs the name correct?\n", get_name)
+            check_name = input(
+                "\nPlease type in 'Yes', if the name is correct or 'No' if you want to change it.\n"
+            )
+            if check_name.lower() == "yes":
+                if name == empty_nan:
+                    print("\nThe name is still missing.\n")
+                else:
+                    break
 
     # Remove everything after the first sentence.
     name = get_name.partition(".")[0]
+    name = get_name.partition("\n")[0]  # Let's try out if this makes sense.
     name = name.replace("[", "")  # Remove "["
     name = name.replace("]", "")  # Remove "["
     name = name.replace("'", "")  # Remove "'"
     name = " ".join(name.split())  # Remove extra Spaces
 
-    # Aks to skip hazard if it already exists
+    # Asks to skip hazard if it already exists
     if name in measure_list:
         print(
             "\nA measure with the following name: ",
@@ -280,41 +309,88 @@ for s in Row_list:
 
     pdf_status = False
 
-    if str(s[6]) not in remove_nan:
+    if str(s[6]) not in empty_nan:
         risk_level = 1
-    elif str(s[7]) not in remove_nan:
+    elif str(s[7]) not in empty_nan:
         risk_level = 2
-    elif str(s[8]) not in remove_nan:
+    elif str(s[8]) not in empty_nan:
         risk_level = 3
 
     # Check that at least one risk level has been selected:
-    if str(s[6]) == remove_nan and str(s[7]) == remove_nan and str(s[8]) == remove_nan:
+    if str(s[6]) == empty_nan and str(s[7]) == empty_nan and str(s[8]) == empty_nan:
+
         print("\nThe risk level is missing for the following hazard:", s[0])
-        risk_level = input("Please enter a risk level (1, 2 or 3)\n")
+
+        while True:
+            risk_level = int(input("Please enter a risk level (1, 2 or 3)\n"))
+            check_risk_level = input(
+                "\nPlease type in 'Yes', if the risk level is correct or 'No' if you want to change it.\n"
+            )
+            if check_risk_level.lower() == "yes":
+
+                if risk_level == empty_nan:
+                    print("\nThe risk level is still missing.")
+                elif ((risk_level != 1) and (risk_level != 2) and (risk_level != 3)):
+                    print("\nThe risk level is invalid.")
+                else:
+                    break
+
     # Check that only one risk level has been selected:
     if (
-        (str(s[6]) != remove_nan and str(s[7]) != remove_nan)
-        or (str(s[7]) != remove_nan and str(s[8]) != remove_nan)
-        or (str(s[6]) != remove_nan and str(s[8]) != remove_nan)
+        (str(s[6]) != empty_nan and str(s[7]) != empty_nan)
+        or (str(s[7]) != empty_nan and str(s[8]) != empty_nan)
+        or (str(s[6]) != empty_nan and str(s[8]) != empty_nan)
     ):
         print(
             "\nYou have selected multiple risk levels for the following hazard:", s[0]
         )
-        risk_level = input("Please only choose one risk level(1, 2 or 3):\n")
+        while True:
+            risk_level = int(input("Please enter a risk level (1, 2 or 3):\n"))
+            check_risk_level = input(
+                "\nPlease type in 'Yes', if the risk level is correct or 'No' if you want to change it.\n"
+            )
+            if check_risk_level.lower() == "yes":
+
+                if risk_level == empty_nan:
+                    print("\nThe risk level is still missing.")
+                elif ((risk_level != 1) and (risk_level != 2) and (risk_level != 3)):
+                    print("\nThe risk level is invalid.")
+                else:
+                    break
 
     # Get the risk id
     get_first_char = str(s[0])
     first_char = get_first_char[0]
 
-    if first_char == "" or first_char == "nan":
+    # Check number
+    if (
+        (first_char == "")
+        or (first_char == "nan")
+        or (str(first_char)).isnumeric() == False
+    ):
         print(
-            "\nThe numbering seems to be broken / missing at:",
+            "\nThe numbering seems to be missing at:",
             s[0],
             ". Without the numbering we cannot select the correct risk id.",
         )
-        first_char = input(
-            "\nPlease enter the first character, e.g. for '1.1 ungeschützte bewegte Maschinenteile' you would enter '1'.):\n"
-        )
+
+        while True:
+            first_char = input(
+                "\nPlease enter the first character, e.g. for '1.1 ungeschützte bewegte Maschinenteile' you would enter '1'.):\n"
+            )
+            check_first_char = input(
+                "\nPlease type in 'Yes', if the risk level is correct or 'No' if you want to change it.\n"
+            )
+            if check_first_char.lower() == "yes":
+
+                if (
+                    (first_char == "")
+                    or (first_char == "nan")
+                    or (str(first_char)).isnumeric() == False
+                ):
+                    print("\nThe risk level is still broken.")
+                else:
+                    break
 
     # DEV IDs
     if value_env.upper() == "DEV":
@@ -402,7 +478,7 @@ for s in Row_list:
     date = s[11]
     format = "%d.%m.%Y"
 
-    if str(date) != remove_nan:
+    if str(date) != empty_nan:
 
         # Check for correct date format
         try:
@@ -420,7 +496,7 @@ for s in Row_list:
                 s[0],
             ) from None
 
-    if str(date) == remove_nan:
+    if str(date) == empty_nan:
         body = {
             "done": measure_status,
             "facility": {"id": division_id},
