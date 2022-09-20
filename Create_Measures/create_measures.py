@@ -8,8 +8,6 @@ from datetime import datetime
 import locale
 import openpyxl  # import needed for windows exe - otherwise the converter will miss it even though it should work via pandas
 
-# TODO: Zeilenumbrueche und Abgleich mit bereits existierenden Massnahmen (wenn es geht)
-
 locale.setlocale(locale.LC_TIME, "de_DE")  # German
 
 # How to use:
