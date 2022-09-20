@@ -377,7 +377,7 @@ for s in Row_list:
                 "\nPlease enter the first character, e.g. for '1.1 ungeschützte bewegte Maschinenteile' you would enter '1'.):\n"
             )
             check_first_char = input(
-                "\nPlease type in 'Yes', if the risk level is correct or 'No' if you want to change it.\n"
+                "\nPlease type in 'Yes', if the number is correct or 'No' if you want to change it.\n"
             )
             if check_first_char.lower() == "yes":
 
@@ -386,7 +386,7 @@ for s in Row_list:
                     or (first_char == "nan")
                     or (str(first_char)).isnumeric() == False
                 ):
-                    print("\nThe risk level is still broken.")
+                    print("\nThe numbering is still broken.")
                 else:
                     break
 
@@ -428,7 +428,7 @@ for s in Row_list:
             risk_id = "a506f7b8-336d-40b4-aa0a-e0c4c6ba8de6"
         else:
             # Nicht valide
-            print("Invalid risk id.")
+            print("The risk id is invalid.")
             raise
 
     elif value_env.upper() == "PROD":
