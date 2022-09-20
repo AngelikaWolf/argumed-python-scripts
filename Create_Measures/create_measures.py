@@ -161,7 +161,7 @@ while True:
         )
     except requests.JSONDecodeError as json_decode_error:
         raise Exception(
-            "\nThe division does not exist",
+            "\nThe division does not exist.",
         ) from None
 
     check_div_id = input(
@@ -468,7 +468,7 @@ for s in Row_list:
             risk_id = "09259b68-df01-4820-b6be-7441c7435c67"
         else:
             # Nicht valide
-            print("Invalid risk id.")
+            print("The risk id is invalid.")
             raise
 
     source = gbu_name
