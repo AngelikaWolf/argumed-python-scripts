@@ -1,4 +1,4 @@
-# How to Use - User
+# How to Use - Argumed User
 
 1. Download the .zip file and unzip it
 
