@@ -112,7 +112,7 @@ while True:
         )
     except KeyError as keyerror:
         raise Exception(
-            "\nThe customer does not exist",
+            "\nThe customer does not exist.",
         ) from None
 
     check_customer_id = input(
