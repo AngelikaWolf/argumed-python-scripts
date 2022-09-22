@@ -199,6 +199,7 @@ for entry in all_measures["data"]:
 # Iterate
 for s in Row_list:
 
+    # Debug:
     """print("s0",s[0])
     print("s1",s[1])
     print("s2",s[2])
@@ -213,55 +214,11 @@ for s in Row_list:
     print("s11",s[11])
     print("s12",s[12])"""
 
-    measure_status = s[12]
-
-    while True:
-
-        if str(measure_status) == "Erledigt" or str(measure_status) == "erledigt":
-            measure_status = True
-            break
-        elif str(measure_status) == "Offen" or str(measure_status) == "offen":
-            measure_status = False
-            break
-        else:
-            print(
-                "\nThe status of the following hazard is either missing or not valid:",
-                s[0],
-            )
-            measure_status = input(
-                "\nPlease type in the status ('Erledigt' or 'Offen'):\n"
-            )
-
-    # Hazard must be a string. Then we can work with it.
-    get_hazard = str(s[0])
-    hazard = "".join(
-        [a for a in get_hazard if not a.isdigit()]
-    )  # Remove numbers like 1.1
-    hazard = hazard.replace(".", "")  # Remove "."
-    hazard = " ".join(hazard.split())  # Remove extra Spaces
-
     # Needed for some comparisons
     empty_nan = "nan"
-    description = str(s[9])
-
-    if description == empty_nan:
-
-        print("\nThe description is missing for the following hazard:", s[0])
-
-        while True:
-            description = input("\nPlease type in a description:\n")
-            print("\nIs the description correct?\n", description)
-            check_des = input(
-                "\nPlease type in 'Yes', if the description is correct or 'No' if you want to change it.\n"
-            )
-            if check_des.lower() == "yes":
-                if description == empty_nan:
-                    print("\nThe description is still missing.\n")
-                else:
-                    break
 
     # Name must be a string. Then we can work with it.
-    get_name = description
+    get_name = str(s[9])
 
     if get_name == empty_nan:
 
@@ -305,8 +262,55 @@ for s in Row_list:
         elif (create_or_not.lower() != "no") and (create_or_not.lower() != "yes"):
             logger.error("\nInvalid response.")
 
+    measure_status = s[12]
+
+    while True:
+
+        if str(measure_status) == "Erledigt" or str(measure_status) == "erledigt":
+            measure_status = True
+            break
+        elif str(measure_status) == "Offen" or str(measure_status) == "offen":
+            measure_status = False
+            break
+        else:
+            print(
+                "\nThe status of the following hazard is either missing or not valid:",
+                s[0],
+            )
+            measure_status = input(
+                "\nPlease type in the status ('Erledigt' or 'Offen'):\n"
+            )
+
+    # Hazard must be a string. Then we can work with it.
+    get_hazard = str(s[0])
+    hazard = "".join(
+        [a for a in get_hazard if not a.isdigit()]
+    )  # Remove numbers like 1.1
+    hazard = hazard.replace(".", "")  # Remove "."
+    hazard = " ".join(hazard.split())  # Remove extra Spaces
+
+    # Get the description for the measure
+    description = str(s[9])
+
+    if description == empty_nan:
+
+        print("\nThe description is missing for the following hazard:", s[0])
+
+        while True:
+            description = input("\nPlease type in a description:\n")
+            print("\nIs the description correct?\n", description)
+            check_des = input(
+                "\nPlease type in 'Yes', if the description is correct or 'No' if you want to change it.\n"
+            )
+            if check_des.lower() == "yes":
+                if description == empty_nan:
+                    print("\nThe description is still missing.\n")
+                else:
+                    break
+
     pdf_status = False
 
+    # Get the risk level
     if str(s[6]) not in empty_nan:
         risk_level = 1
     elif str(s[7]) not in empty_nan:
