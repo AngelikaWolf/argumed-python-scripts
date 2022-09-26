@@ -238,7 +238,6 @@ for s in Row_list:
 
     # Remove everything after the first sentence.
     name = get_name.partition(".")[0]
-    name = get_name.partition("\n")[0]  # Let's try out if this makes sense.
     name = name.replace("[", "")  # Remove "["
     name = name.replace("]", "")  # Remove "["
     name = name.replace("'", "")  # Remove "'"
