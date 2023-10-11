@@ -15,8 +15,8 @@ locale.setlocale(locale.LC_TIME, "de_DE")  # German
 # You also need a file for the Weissbier access token. The name must be "token.txt" and it must also be stored in the same location as this script.
 # Then you can run the script.
 
-DEV_URL = "https://weissbier.dev.dialoguecorp.com/api/v1/customers"
-PROD_URL = "https://weissbier.dialoguecorp.eu/api/v1/customers"
+DEV_URL = "https://weissbier.dev.argumed.com/api/v1/customers"
+PROD_URL = "https://weissbier.argumed.eu/api/v1/customers"
 
 # Headers for Request and Token
 with open("token.txt", "r") as f:
